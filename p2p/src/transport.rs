@@ -2,6 +2,7 @@ use libp2p::{
     core::upgrade,
     noise,
     tcp,
+    websocket,
     yamux,
     Transport,
     PeerId,
@@ -13,7 +14,11 @@ pub fn build_transport(keypair: &Keypair) -> Result<libp2p::core::transport::Box
     let noise_config = noise::Config::new(keypair)
         .map_err(|e| P2PError::Transport(format!("Noise config error: {:?}", e)))?;
 
-    let transport = tcp::tokio::Transport::new(tcp::Config::default())
+    let tcp_transport = tcp::tokio::Transport::new(tcp::Config::default());
+    let ws_transport = websocket::Config::new(tcp::tokio::Transport::new(tcp::Config::default()));
+    
+    let transport = tcp_transport
+        .or_transport(ws_transport)
         .upgrade(upgrade::Version::V1)
         .authenticate(noise_config)
         .multiplex(yamux::Config::default())

@@ -36,7 +36,7 @@ dirs = "5.0"
 clap = { version = "4.5", features = ["derive"] }
 
 # P2P
-libp2p = { version = "0.56", features = ["tcp", "tokio", "noise", "yamux", "gossipsub", "kad", "identify", "ping", "macros"] }
+libp2p = { version = "0.56", features = ["tcp", "websocket", "dns", "tokio", "noise", "yamux", "gossipsub", "kad", "identify", "ping", "macros"] }
 libp2p-identity = { version = "0.2.12", features = ["peerid", "secp256k1", "ed25519"] }
 tokio = { version = "1.40", features = ["full"] }
 
