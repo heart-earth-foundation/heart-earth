@@ -114,7 +114,7 @@ async fn login_and_connect(name: &str) -> Result<(), Box<dyn Error>> {
     let topic = IdentTopic::new(DEV_CHANNEL);
     swarm.behaviour_mut().gossipsub.subscribe(&topic)?;
 
-    let bootstrap_addr: Multiaddr = "/dns/adequate-bravery-production.up.railway.app/tcp/4001/ws".parse()?;
+    let bootstrap_addr: Multiaddr = "/ip4/35.212.15.0/tcp/49745".parse()?;
     swarm.dial(bootstrap_addr)?;
 
     println!("Client starting...");
