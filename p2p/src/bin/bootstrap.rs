@@ -51,7 +51,19 @@ async fn main() -> Result<(), Box<dyn Error>> {
                     println!("Peer connected: {peer_id}");
                 }
                 SwarmEvent::Behaviour(event) => {
-                    println!("Behaviour event: {event:?}");
+                    match event {
+                        p2p::HeartEarthBehaviourEvent::Identify(identify_event) => {
+                            if let libp2p::identify::Event::Received { peer_id, info, .. } = identify_event {
+                                println!("Identified peer: {peer_id}");
+                                for addr in info.listen_addrs {
+                                    swarm.behaviour_mut().kademlia.add_address(&peer_id, addr);
+                                }
+                            }
+                        }
+                        _ => {
+                            println!("Other behaviour event: {event:?}");
+                        }
+                    }
                 }
                 SwarmEvent::IncomingConnection { connection_id, .. } => {
                     println!("Incoming connection: {connection_id}");

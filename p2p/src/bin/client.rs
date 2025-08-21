@@ -140,7 +140,25 @@ async fn login_and_connect(name: &str) -> Result<(), Box<dyn Error>> {
             }
             event = swarm.select_next_some() => match event {
                 SwarmEvent::Behaviour(event) => {
-                    println!("Event: {event:?}");
+                    match event {
+                        p2p::HeartEarthBehaviourEvent::Identify(identify_event) => {
+                            if let libp2p::identify::Event::Received { peer_id, info, .. } = identify_event {
+                                println!("Identified peer: {peer_id}");
+                                for addr in info.listen_addrs {
+                                    swarm.behaviour_mut().kademlia.add_address(&peer_id, addr);
+                                }
+                            }
+                        }
+                        p2p::HeartEarthBehaviourEvent::Gossipsub(gossip_event) => {
+                            if let libp2p::gossipsub::Event::Message { message, .. } = gossip_event {
+                                let content = String::from_utf8_lossy(&message.data);
+                                println!("Received: {}", content);
+                            }
+                        }
+                        _ => {
+                            println!("Other event: {event:?}");
+                        }
+                    }
                 }
                 SwarmEvent::ConnectionEstablished { peer_id, .. } => {
                     println!("Connected to {peer_id}");
