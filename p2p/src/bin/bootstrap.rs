@@ -41,21 +41,8 @@ async fn main() -> Result<(), Box<dyn Error>> {
     println!("Peer ID: {}", swarm.local_peer_id());
     println!("Developer channel: {}", DEV_CHANNEL);
 
-    let mut stdin = io::BufReader::new(io::stdin()).lines();
-
     loop {
         tokio::select! {
-            line = stdin.next_line() => {
-                if let Ok(Some(line)) = line {
-                    if line == "quit" {
-                        break;
-                    }
-                    let message = format!("[Bootstrap]: {}", line);
-                    if let Err(e) = swarm.behaviour_mut().gossipsub.publish(topic.clone(), message.as_bytes()) {
-                        println!("Failed to publish message: {e}");
-                    }
-                }
-            }
             event = swarm.select_next_some() => match event {
                 SwarmEvent::NewListenAddr { address, .. } => {
                     println!("Listening on {address}");
