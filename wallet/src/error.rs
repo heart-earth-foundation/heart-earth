@@ -22,4 +22,7 @@ pub enum WalletError {
     
     #[error("P2P identity error: {0}")]
     P2PIdentity(String),
+    
+    #[error("Storage error: {0}")]
+    Storage(String),
 }

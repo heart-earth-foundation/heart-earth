@@ -17,6 +17,11 @@ zeroize = { workspace = true }
 rand = { workspace = true }
 libp2p-identity = { workspace = true }
 
+# Security & Storage
+argon2 = { workspace = true }
+aes-gcm = { workspace = true }
+dirs = { workspace = true }
+
 # Additional wallet-specific deps
 ripemd = "0.1"
 thiserror = "1.0"
@@ -33,6 +38,7 @@ rstest = { workspace = true }
 criterion = { workspace = true }
 test-case = { workspace = true }
 consistenttime = { workspace = true }
+base64 = "0.21"
 
 [[bench]]
 name = "wallet_bench"
