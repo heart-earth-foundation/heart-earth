@@ -1,0 +1,7 @@
+[build]
+builder = "NIXPACKS"
+
+[deploy]
+startCommand = "cargo run --release -p p2p --bin bootstrap"
+restartPolicyType = "ON_FAILURE"
+restartPolicyMaxRetries = 3

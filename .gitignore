@@ -1,0 +1,27 @@
+# Rust
+/target
+Cargo.lock
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Environment
+.env
+.env.local
+
+# Railway
+.railway/
+
+# Logs
+*.log
+
+# Development/Planning docs (temporary)
+wallet-architecture.md
+p2p-implementation-plan.md
+implementation-continuation.md
+CLAUDE.md
