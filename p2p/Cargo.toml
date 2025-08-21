@@ -16,6 +16,7 @@ wallet = { path = "../wallet" }
 clap = { workspace = true }
 rpassword = { workspace = true }
 zeroize = { workspace = true }
+dotenvy = "0.15"
 
 # HTTP for Railway health checks
 hyper = { version = "1.0", features = ["full"] }

@@ -36,6 +36,9 @@ enum Commands {
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn Error>> {
+    // Load environment variables from .env file
+    let _ = dotenvy::dotenv();
+    
     let cli = Cli::parse();
     
     match cli.command {
