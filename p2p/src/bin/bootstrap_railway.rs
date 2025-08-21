@@ -52,6 +52,39 @@ async fn main() -> Result<(), Box<dyn Error>> {
     
     let ws_addr: Multiaddr = format!("/ip4/0.0.0.0/tcp/{}/ws", listen_port).parse()?;
     swarm.listen_on(ws_addr)?;
+    
+    // Start minimal HTTP health server for Railway on a different port
+    let health_port = if listen_port == "4001" { "3000" } else { "4001" };
+    let health_port_clone = health_port.to_string();
+    tokio::spawn(async move {
+        use hyper::server::conn::http1;
+        use hyper::service::service_fn;
+        use hyper::{Request, Response};
+        use hyper::body::Bytes;
+        use tokio::net::TcpListener;
+        use http_body_util::Full;
+        use hyper_util::rt::TokioIo;
+        use std::convert::Infallible;
+        
+        async fn health_check(_req: Request<hyper::body::Incoming>) -> Result<Response<Full<Bytes>>, Infallible> {
+            Ok(Response::new(Full::new(Bytes::from("P2P Bootstrap Node OK"))))
+        }
+        
+        let bind_addr = format!("0.0.0.0:{}", health_port_clone);
+        if let Ok(listener) = TcpListener::bind(&bind_addr).await {
+            println!("Health server listening on {}", bind_addr);
+            loop {
+                if let Ok((stream, _)) = listener.accept().await {
+                    let io = TokioIo::new(stream);
+                    tokio::spawn(async move {
+                        let _ = http1::Builder::new()
+                            .serve_connection(io, service_fn(health_check))
+                            .await;
+                    });
+                }
+            }
+        }
+    });
 
     println!("Railway Bootstrap node starting...");
     println!("Peer ID: {}", swarm.local_peer_id());

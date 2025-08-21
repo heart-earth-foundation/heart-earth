@@ -15,13 +15,13 @@ cargo build --release -p p2p --bin client
 
 ### 2. Create Your Wallet (First Time)
 ```bash
-cargo run --release -p p2p --bin client create --name mywalletname
+cargo run --release -p p2p --bin client create --name default
 ```
 **Important**: Write down the 12-word mnemonic phrase! You'll need it to recover your wallet.
 
 ### 3. Join the Network
 ```bash
-cargo run --release -p p2p --bin client login --name mywalletname
+cargo run --release -p p2p --bin client login --name default
 ```
 
 That's it! You'll connect to the bootstrap node and can start sending messages.
