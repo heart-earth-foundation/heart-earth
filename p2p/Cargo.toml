@@ -17,6 +17,11 @@ clap = { workspace = true }
 rpassword = { workspace = true }
 zeroize = { workspace = true }
 
+# HTTP for Railway health checks
+hyper = { version = "1.0", features = ["full"] }
+hyper-util = { version = "0.1", features = ["full"] }
+http-body-util = "0.1"
+
 [dev-dependencies]
 proptest = { workspace = true }
 rstest = { workspace = true }

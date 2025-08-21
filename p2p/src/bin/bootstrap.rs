@@ -41,6 +41,35 @@ async fn main() -> Result<(), Box<dyn Error>> {
     println!("Peer ID: {}", swarm.local_peer_id());
     println!("Developer channel: {}", DEV_CHANNEL);
 
+    // Start HTTP health server for Railway
+    tokio::spawn(async {
+        use hyper::server::conn::http1;
+        use hyper::service::service_fn;
+        use hyper::{Request, Response};
+        use hyper::body::Bytes;
+        use tokio::net::TcpListener;
+        use http_body_util::Full;
+        use hyper_util::rt::TokioIo;
+        use std::convert::Infallible;
+        
+        async fn health_check(_req: Request<hyper::body::Incoming>) -> Result<Response<Full<Bytes>>, Infallible> {
+            Ok(Response::new(Full::new(Bytes::from("OK"))))
+        }
+        
+        let listener = TcpListener::bind("0.0.0.0:3000").await.unwrap();
+        loop {
+            let (stream, _) = listener.accept().await.unwrap();
+            let io = TokioIo::new(stream);
+            tokio::spawn(async move {
+                if let Err(e) = http1::Builder::new()
+                    .serve_connection(io, service_fn(health_check))
+                    .await {
+                    eprintln!("Health server error: {}", e);
+                }
+            });
+        }
+    });
+
     loop {
         tokio::select! {
             event = swarm.select_next_some() => match event {
