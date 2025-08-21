@@ -8,18 +8,93 @@ use libp2p::{
 use p2p::{P2PNode, build_transport, HeartEarthBehaviour};
 use std::error::Error;
 use tokio::io::{self, AsyncBufReadExt};
-use wallet::Wallet;
+use clap::{Parser, Subcommand};
+use rpassword;
+use zeroize::Zeroizing;
+use wallet::{Wallet, WalletStorage, Seed};
 
 const DEV_CHANNEL: &str = "/art/dev/general/v1";
 
+#[derive(Parser)]
+#[command(name = "heart-earth-client")]
+#[command(about = "Heart Earth P2P Network Client")]
+struct Cli {
+    #[command(subcommand)]
+    command: Commands,
+}
+
+#[derive(Subcommand)]
+enum Commands {
+    Create {
+        #[arg(short, long, default_value = "default")]
+        name: String,
+    },
+    Login {
+        #[arg(short, long, default_value = "default")]
+        name: String,
+    },
+}
+
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn Error>> {
-    println!("Enter mnemonic phrase:");
+    let cli = Cli::parse();
+    
+    match cli.command {
+        Commands::Create { name } => {
+            create_wallet(&name).await?;
+        }
+        Commands::Login { name } => {
+            login_and_connect(&name).await?;
+        }
+    }
+    
+    Ok(())
+}
+
+async fn create_wallet(name: &str) -> Result<(), Box<dyn Error>> {
+    if WalletStorage::wallet_exists(name) {
+        eprintln!("Wallet '{}' already exists. Use 'login' command instead.", name);
+        return Ok(());
+    }
+    
+    println!("Creating new wallet: {}", name);
+    println!();
+    
+    let password = get_password_with_confirmation()?;
+    let seed = Seed::generate(12)?;
+    let mnemonic = seed.phrase();
+    
+    println!("=== IMPORTANT: BACKUP YOUR MNEMONIC PHRASE ===");
+    println!();
+    println!("Write down these 12 words in order and keep them safe:");
+    println!();
+    println!("{}", mnemonic);
+    println!();
+    println!("This is the ONLY time your mnemonic will be displayed!");
+    println!("Without it, you cannot recover your wallet.");
+    println!();
+    print!("Press Enter after you have written down the mnemonic...");
     let mut input = String::new();
     std::io::stdin().read_line(&mut input)?;
-    let mnemonic = input.trim();
+    
+    WalletStorage::save_encrypted_wallet(name, &mnemonic, &password)?;
+    
+    println!("Wallet '{}' created successfully!", name);
+    println!("Use 'heart-earth-client login --name {}' to connect to the network.", name);
+    
+    Ok(())
+}
 
-    let mut wallet = Wallet::from_mnemonic(mnemonic, None)?;
+async fn login_and_connect(name: &str) -> Result<(), Box<dyn Error>> {
+    if !WalletStorage::wallet_exists(name) {
+        eprintln!("Wallet '{}' not found. Use 'create' command first.", name);
+        return Ok(());
+    }
+    
+    let password = get_password()?;
+    let mnemonic = WalletStorage::load_encrypted_wallet(name, &password)?;
+    
+    let mut wallet = Wallet::from_mnemonic(&mnemonic, None)?;
     let account = wallet.generate_account(0, 0)?;
     
     let ed25519_key = account.ed25519_derived_key()
@@ -76,4 +151,31 @@ async fn main() -> Result<(), Box<dyn Error>> {
     }
 
     Ok(())
+}
+
+fn get_password() -> Result<Zeroizing<String>, Box<dyn Error>> {
+    let password = rpassword::prompt_password("Enter wallet password: ")?;
+    Ok(Zeroizing::new(password))
+}
+
+fn get_password_with_confirmation() -> Result<Zeroizing<String>, Box<dyn Error>> {
+    loop {
+        let password1 = rpassword::prompt_password("Enter new password (ASCII only): ")?;
+        let password2 = rpassword::prompt_password("Confirm password: ")?;
+        
+        if password1 == password2 {
+            if password1.len() < 8 {
+                println!("Password must be at least 8 characters long.");
+                continue;
+            }
+            if !password1.is_ascii() {
+                println!("Password must contain only ASCII characters (a-z, A-Z, 0-9, symbols).");
+                println!("Unicode characters are not allowed for security reasons.");
+                continue;
+            }
+            return Ok(Zeroizing::new(password1));
+        } else {
+            println!("Passwords do not match. Please try again.");
+        }
+    }
 }
