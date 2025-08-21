@@ -47,10 +47,18 @@ async fn main() -> Result<(), Box<dyn Error>> {
                 SwarmEvent::NewListenAddr { address, .. } => {
                     println!("Listening on {address}");
                 }
+                SwarmEvent::ConnectionEstablished { peer_id, .. } => {
+                    println!("Peer connected: {peer_id}");
+                }
                 SwarmEvent::Behaviour(event) => {
                     println!("Behaviour event: {event:?}");
                 }
-                _ => {}
+                SwarmEvent::IncomingConnection { connection_id, .. } => {
+                    println!("Incoming connection: {connection_id}");
+                }
+                _ => {
+                    println!("Other event: {event:?}");
+                }
             }
         }
     }
