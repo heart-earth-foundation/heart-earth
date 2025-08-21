@@ -33,8 +33,10 @@ async fn main() -> Result<(), Box<dyn Error>> {
     let topic = IdentTopic::new(DEV_CHANNEL);
     swarm.behaviour_mut().gossipsub.subscribe(&topic)?;
 
-    let port = std::env::var("PORT").unwrap_or_else(|_| "4001".to_string());
-    let listen_addr: Multiaddr = format!("/ip4/0.0.0.0/tcp/{}", port).parse()?;
+    // Use port 4001 for P2P, Railway PORT for HTTP health
+    let p2p_port = "4001";
+    let http_port = std::env::var("PORT").unwrap_or_else(|_| "3000".to_string());
+    let listen_addr: Multiaddr = format!("/ip4/0.0.0.0/tcp/{}", p2p_port).parse()?;
     swarm.listen_on(listen_addr)?;
 
     println!("Bootstrap node starting...");
@@ -42,7 +44,8 @@ async fn main() -> Result<(), Box<dyn Error>> {
     println!("Developer channel: {}", DEV_CHANNEL);
 
     // Start HTTP health server for Railway
-    tokio::spawn(async {
+    let http_port_clone = http_port.clone();
+    tokio::spawn(async move {
         use hyper::server::conn::http1;
         use hyper::service::service_fn;
         use hyper::{Request, Response};
@@ -56,7 +59,9 @@ async fn main() -> Result<(), Box<dyn Error>> {
             Ok(Response::new(Full::new(Bytes::from("OK"))))
         }
         
-        let listener = TcpListener::bind("0.0.0.0:3000").await.unwrap();
+        let bind_addr = format!("0.0.0.0:{}", http_port_clone);
+        let listener = TcpListener::bind(&bind_addr).await.unwrap();
+        println!("HTTP health server listening on {}", bind_addr);
         loop {
             let (stream, _) = listener.accept().await.unwrap();
             let io = TokioIo::new(stream);
