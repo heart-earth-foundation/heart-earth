@@ -4,6 +4,7 @@ use libp2p::{
     tcp,
     websocket,
     yamux,
+    dns,
     Transport,
     PeerId,
 };
@@ -17,8 +18,10 @@ pub fn build_transport(keypair: &Keypair) -> Result<libp2p::core::transport::Box
     let tcp_transport = tcp::tokio::Transport::new(tcp::Config::default());
     let ws_transport = websocket::Config::new(tcp::tokio::Transport::new(tcp::Config::default()));
     
-    let transport = tcp_transport
-        .or_transport(ws_transport)
+    let base_transport = tcp_transport.or_transport(ws_transport);
+    
+    let transport = dns::tokio::Transport::system(base_transport)
+        .map_err(|e| P2PError::Transport(format!("DNS transport error: {:?}", e)))?
         .upgrade(upgrade::Version::V1)
         .authenticate(noise_config)
         .multiplex(yamux::Config::default())

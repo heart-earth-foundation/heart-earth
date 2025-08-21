@@ -13,7 +13,15 @@ const DEV_CHANNEL: &str = "/art/dev/general/v1";
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn Error>> {
-    let seed = Seed::generate(12)?;
+    let seed_phrase = std::env::var("BOOTSTRAP_SEED")
+        .unwrap_or_else(|_| {
+            let seed = Seed::generate(12).expect("Failed to generate seed");
+            seed.phrase().to_string()
+        });
+    
+    println!("Bootstrap seed phrase: {}", seed_phrase);
+    
+    let seed = Seed::from_phrase(&seed_phrase)?;
     let account = UnifiedAccount::derive(&seed, 0, 0)?;
     let ed25519_key = account.ed25519_derived_key()
         .ok_or("No ed25519 key available")?;
@@ -31,21 +39,23 @@ async fn main() -> Result<(), Box<dyn Error>> {
 
     let topic = IdentTopic::new(DEV_CHANNEL);
     swarm.behaviour_mut().gossipsub.subscribe(&topic)?;
-
-    // Use port 4001 for P2P, Railway PORT for HTTP health
-    let p2p_port = "4001";
-    let http_port = std::env::var("PORT").unwrap_or_else(|_| "3000".to_string());
-    let listen_addr: Multiaddr = format!("/ip4/0.0.0.0/tcp/{}", p2p_port).parse()?;
-    swarm.listen_on(listen_addr)?;
-    
-    // Add self to Kademlia routing table for proper DHT functionality
     swarm.behaviour_mut().kademlia.set_mode(Some(libp2p::kad::Mode::Server));
 
-    println!("Bootstrap node starting...");
-    println!("Peer ID: {}", swarm.local_peer_id());
-    println!("Developer channel: {}", DEV_CHANNEL);
+    // Railway provides PORT env var for HTTP health checks
+    let http_port = std::env::var("PORT").unwrap_or_else(|_| "3000".to_string());
+    
+    // Use a different port for WebSocket P2P
+    let ws_port = "4001";
+    let ws_listen_addr: Multiaddr = format!("/ip4/0.0.0.0/tcp/{}/ws", ws_port).parse()?;
+    swarm.listen_on(ws_listen_addr.clone())?;
 
-    // Start HTTP health server for Railway
+    println!("Railway Bootstrap node starting...");
+    println!("Peer ID: {}", swarm.local_peer_id());
+    println!("WebSocket P2P on port: {}", ws_port);
+    println!("HTTP health on port: {}", http_port);
+    println!("Developer channel: {}", DEV_CHANNEL);
+    
+    // Start HTTP health server for Railway on PORT
     let http_port_clone = http_port.clone();
     tokio::spawn(async move {
         use hyper::server::conn::http1;
@@ -76,6 +86,12 @@ async fn main() -> Result<(), Box<dyn Error>> {
             });
         }
     });
+    
+    // Print connection string for clients
+    if let Ok(railway_domain) = std::env::var("RAILWAY_PUBLIC_DOMAIN") {
+        println!("Clients can connect using:");
+        println!("  wss://{}/p2p/{}", railway_domain, swarm.local_peer_id());
+    }
 
     loop {
         tokio::select! {
@@ -96,17 +112,19 @@ async fn main() -> Result<(), Box<dyn Error>> {
                                 }
                             }
                         }
-                        _ => {
-                            println!("Other behaviour event: {event:?}");
+                        p2p::HeartEarthBehaviourEvent::Gossipsub(gossip_event) => {
+                            if let libp2p::gossipsub::Event::Message { message, .. } = gossip_event {
+                                let content = String::from_utf8_lossy(&message.data);
+                                println!("Message: {}", content);
+                            }
                         }
+                        _ => {}
                     }
                 }
                 SwarmEvent::IncomingConnection { connection_id, .. } => {
                     println!("Incoming connection: {connection_id}");
                 }
-                _ => {
-                    println!("Other event: {event:?}");
-                }
+                _ => {}
             }
         }
     }

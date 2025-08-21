@@ -2,10 +2,9 @@ use libp2p::{
     gossipsub::IdentTopic,
     swarm::SwarmEvent,
     SwarmBuilder,
-    Multiaddr,
     futures::StreamExt,
 };
-use p2p::{P2PNode, build_transport, HeartEarthBehaviour};
+use p2p::{P2PNode, build_transport, HeartEarthBehaviour, BootstrapConfig};
 use std::error::Error;
 use tokio::io::{self, AsyncBufReadExt};
 use clap::{Parser, Subcommand};
@@ -114,8 +113,17 @@ async fn login_and_connect(name: &str) -> Result<(), Box<dyn Error>> {
     let topic = IdentTopic::new(DEV_CHANNEL);
     swarm.behaviour_mut().gossipsub.subscribe(&topic)?;
 
-    let bootstrap_addr: Multiaddr = "/ip4/35.212.15.0/tcp/49745".parse()?;
-    swarm.dial(bootstrap_addr)?;
+    // Get bootstrap configuration from environment or use defaults
+    let bootstrap = BootstrapConfig::from_env()?;
+    
+    // Add bootstrap node to Kademlia routing table
+    swarm.behaviour_mut().kademlia.add_address(&bootstrap.peer_id, bootstrap.address.clone());
+    
+    // Initiate connection to bootstrap node
+    swarm.dial(bootstrap.address)?;
+    
+    // Bootstrap the Kademlia DHT
+    swarm.behaviour_mut().kademlia.bootstrap()?;
 
     println!("Client starting...");
     println!("Peer ID: {}", swarm.local_peer_id());

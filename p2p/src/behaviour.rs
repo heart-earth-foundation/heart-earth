@@ -30,6 +30,9 @@ impl HeartEarthBehaviour {
             .heartbeat_interval(std::time::Duration::from_secs(10))
             .validation_mode(ValidationMode::Strict)
             .message_id_fn(message_id_fn)
+            .mesh_n(2)
+            .mesh_n_low(1)
+            .mesh_n_high(3)
             .build()
             .map_err(|e| P2PError::Behaviour(format!("Gossipsub config error: {}", e)))?;
 
