@@ -41,56 +41,33 @@ async fn main() -> Result<(), Box<dyn Error>> {
     swarm.behaviour_mut().gossipsub.subscribe(&topic)?;
     swarm.behaviour_mut().kademlia.set_mode(Some(libp2p::kad::Mode::Server));
 
-    // Railway provides PORT env var for HTTP health checks
-    let http_port = std::env::var("PORT").unwrap_or_else(|_| "3000".to_string());
+    // Use Railway's TCP application port (defaults to 4001)
+    let listen_port = std::env::var("RAILWAY_TCP_APPLICATION_PORT")
+        .or_else(|_| std::env::var("PORT"))
+        .unwrap_or_else(|_| "4001".to_string());
     
-    // Use a different port for WebSocket P2P
-    let ws_port = "4001";
-    let ws_listen_addr: Multiaddr = format!("/ip4/0.0.0.0/tcp/{}/ws", ws_port).parse()?;
-    swarm.listen_on(ws_listen_addr.clone())?;
+    // Listen on both TCP and WebSocket
+    let tcp_addr: Multiaddr = format!("/ip4/0.0.0.0/tcp/{}", listen_port).parse()?;
+    swarm.listen_on(tcp_addr)?;
+    
+    let ws_addr: Multiaddr = format!("/ip4/0.0.0.0/tcp/{}/ws", listen_port).parse()?;
+    swarm.listen_on(ws_addr)?;
 
     println!("Railway Bootstrap node starting...");
     println!("Peer ID: {}", swarm.local_peer_id());
-    println!("WebSocket P2P on port: {}", ws_port);
-    println!("HTTP health on port: {}", http_port);
+    println!("Port: {}", listen_port);
     println!("Developer channel: {}", DEV_CHANNEL);
     
-    // Start HTTP health server for Railway on PORT
-    let http_port_clone = http_port.clone();
-    tokio::spawn(async move {
-        use hyper::server::conn::http1;
-        use hyper::service::service_fn;
-        use hyper::{Request, Response};
-        use hyper::body::Bytes;
-        use tokio::net::TcpListener;
-        use http_body_util::Full;
-        use hyper_util::rt::TokioIo;
-        use std::convert::Infallible;
-        
-        async fn health_check(_req: Request<hyper::body::Incoming>) -> Result<Response<Full<Bytes>>, Infallible> {
-            Ok(Response::new(Full::new(Bytes::from("OK"))))
-        }
-        
-        let bind_addr = format!("0.0.0.0:{}", http_port_clone);
-        let listener = TcpListener::bind(&bind_addr).await.unwrap();
-        println!("HTTP health server listening on {}", bind_addr);
-        loop {
-            let (stream, _) = listener.accept().await.unwrap();
-            let io = TokioIo::new(stream);
-            tokio::spawn(async move {
-                if let Err(e) = http1::Builder::new()
-                    .serve_connection(io, service_fn(health_check))
-                    .await {
-                    eprintln!("Health server error: {}", e);
-                }
-            });
-        }
-    });
-    
-    // Print connection string for clients
-    if let Ok(railway_domain) = std::env::var("RAILWAY_PUBLIC_DOMAIN") {
-        println!("Clients can connect using:");
-        println!("  wss://{}/p2p/{}", railway_domain, swarm.local_peer_id());
+    // Print connection info for clients
+    println!("\nClients can connect via:");
+    if let (Ok(domain), Ok(port)) = (
+        std::env::var("RAILWAY_TCP_PROXY_DOMAIN"),
+        std::env::var("RAILWAY_TCP_PROXY_PORT")
+    ) {
+        println!("  TCP: /dns4/{}/tcp/{}/p2p/{}", domain, port, swarm.local_peer_id());
+    }
+    if let Ok(public_domain) = std::env::var("RAILWAY_PUBLIC_DOMAIN") {
+        println!("  WebSocket: /dns4/{}/tcp/{}/ws/p2p/{}", public_domain, listen_port, swarm.local_peer_id());
     }
 
     loop {
