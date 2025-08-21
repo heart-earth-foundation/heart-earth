@@ -35,8 +35,14 @@ async fn main() -> Result<(), Box<dyn Error>> {
     // Use port 4001 for P2P, Railway PORT for HTTP health
     let p2p_port = "4001";
     let http_port = std::env::var("PORT").unwrap_or_else(|_| "3000".to_string());
-    let listen_addr: Multiaddr = format!("/ip4/0.0.0.0/tcp/{}", p2p_port).parse()?;
-    swarm.listen_on(listen_addr)?;
+    
+    // Listen on TCP for CLI clients
+    let tcp_addr: Multiaddr = format!("/ip4/0.0.0.0/tcp/{}", p2p_port).parse()?;
+    swarm.listen_on(tcp_addr)?;
+    
+    // Listen on WebSocket for web clients
+    let ws_addr: Multiaddr = format!("/ip4/0.0.0.0/tcp/{}/ws", p2p_port).parse()?;
+    swarm.listen_on(ws_addr)?;
     
     // Add self to Kademlia routing table for proper DHT functionality
     swarm.behaviour_mut().kademlia.set_mode(Some(libp2p::kad::Mode::Server));
@@ -82,6 +88,9 @@ async fn main() -> Result<(), Box<dyn Error>> {
             event = swarm.select_next_some() => match event {
                 SwarmEvent::NewListenAddr { address, .. } => {
                     println!("Listening on {address}");
+                    if address.to_string().contains("/ws") {
+                        println!("Web clients connect: ws://157.245.208.60:4001/ws");
+                    }
                 }
                 SwarmEvent::ConnectionEstablished { peer_id, .. } => {
                     println!("Peer connected: {peer_id}");

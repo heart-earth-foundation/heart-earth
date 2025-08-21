@@ -46,10 +46,11 @@ async fn main() -> Result<(), Box<dyn Error>> {
         .or_else(|_| std::env::var("PORT"))
         .unwrap_or_else(|_| "4001".to_string());
     
-    // Listen on both TCP and WebSocket
+    // Listen on TCP for CLI clients
     let tcp_addr: Multiaddr = format!("/ip4/0.0.0.0/tcp/{}", listen_port).parse()?;
     swarm.listen_on(tcp_addr)?;
     
+    // Listen on WebSocket for web clients  
     let ws_addr: Multiaddr = format!("/ip4/0.0.0.0/tcp/{}/ws", listen_port).parse()?;
     swarm.listen_on(ws_addr)?;
     
