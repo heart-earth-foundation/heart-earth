@@ -31,6 +31,9 @@ impl HeartEarthBehaviour {
             .mesh_n(2)
             .mesh_n_low(1)
             .mesh_n_high(3)
+            .max_transmit_size(4096)
+            .max_messages_per_rpc(Some(50))
+            .max_ihave_length(1000)
             .build()
             .map_err(|e| P2PError::Behaviour(format!("Gossipsub config error: {}", e)))?;
 
