@@ -13,6 +13,7 @@ thiserror = "1.0"
 wallet = { path = "../wallet" }
 sha2 = { workspace = true }
 hex = { workspace = true }
+libp2p-connection-limits = "0.6.0"
 
 # CLI
 clap = { workspace = true }

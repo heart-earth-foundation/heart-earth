@@ -6,6 +6,7 @@ use libp2p::{
     swarm::NetworkBehaviour,
     PeerId,
 };
+use libp2p_connection_limits as connection_limits;
 use crate::error::P2PError;
 
 #[derive(NetworkBehaviour)]
@@ -14,6 +15,7 @@ pub struct HeartEarthBehaviour {
     pub kademlia: kad::Behaviour<kad::store::MemoryStore>,
     pub identify: identify::Behaviour,
     pub ping: ping::Behaviour,
+    pub limits: connection_limits::Behaviour,
 }
 
 impl HeartEarthBehaviour {
@@ -54,11 +56,16 @@ impl HeartEarthBehaviour {
 
         let ping = ping::Behaviour::new(ping::Config::new());
 
+        let limits_config = connection_limits::ConnectionLimits::default()
+            .with_max_established_per_peer(Some(1));
+        let limits = connection_limits::Behaviour::new(limits_config);
+
         Ok(Self {
             gossipsub,
             kademlia,
             identify,
             ping,
+            limits,
         })
     }
 }
