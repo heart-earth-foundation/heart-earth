@@ -37,13 +37,13 @@ pub const INVALID_ADDRESSES: &[&str] = &[
     "",
     "invalid",
     "btc1invalid",
-    "art", // Too short
-    "artinvalidchecksum123456789",
+    "heart", // Too short
+    "heartinvalidchecksum123456789",
 ];
 
 pub const TIMING_ATTACK_TEST_CASES: &[(&str, &str)] = &[
-    ("valid_short", "art123"),
-    ("valid_long", "art1234567890abcdef"),
+    ("valid_short", "heart123"),
+    ("valid_long", "heart1234567890abcdef"),
     ("invalid_short", "xxx123"),
     ("invalid_long", "xxx1234567890abcdef"),
     ("wrong_prefix", "btc1234567890abcdef"),

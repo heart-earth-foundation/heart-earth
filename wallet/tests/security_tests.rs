@@ -87,7 +87,7 @@ fn test_address_prefix() {
     let seed = create_test_seed().unwrap();
     let account = UnifiedAccount::derive(&seed, 0, 0).unwrap();
     
-    assert!(account.blockchain_address.starts_with("art"));
+    assert!(account.blockchain_address.starts_with("heart"));
 }
 
 #[test]
@@ -119,7 +119,7 @@ fn test_timing_attack_resistance() {
         account.blockchain_address
     };
     
-    let invalid_address = "artinvalidaddresstest";
+    let invalid_address = "heartinvalidaddresstest";
     
     let mut valid_times = Vec::new();
     let mut invalid_times = Vec::new();
@@ -166,7 +166,7 @@ proptest! {
         let seed = create_test_seed().unwrap();
         let account = UnifiedAccount::derive(&seed, account_num, index).unwrap();
         
-        prop_assert!(account.blockchain_address.starts_with("art"));
+        prop_assert!(account.blockchain_address.starts_with("heart"));
         prop_assert!(account.index == index);
         prop_assert!(account.account_number == account_num);
     }
@@ -174,7 +174,7 @@ proptest! {
     #[test]
     fn prop_address_validation_consistency(
         valid_chars in "[a-zA-Z0-9]{20,50}",
-        prefix in "(art|btc|eth)"
+        prefix in "(heart|btc|eth)"
     ) {
         let test_address = format!("{}{}", prefix, valid_chars);
         let result1 = Address::validate(&test_address);

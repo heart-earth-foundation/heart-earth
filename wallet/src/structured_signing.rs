@@ -377,14 +377,14 @@ mod tests {
         let nonce = Nonce::generate().unwrap();
         
         let request1 = AuthRequest {
-            requester: "art123".to_string(),
+            requester: "heart123".to_string(),
             nonce: nonce.hex().to_string(),
             timestamp: 1234567890,
             permissions: vec!["read".to_string(), "write".to_string()],
         };
         
         let request2 = AuthRequest {
-            requester: "art123".to_string(),
+            requester: "heart123".to_string(),
             nonce: nonce.hex().to_string(),
             timestamp: 1234567890,
             permissions: vec!["read".to_string(), "write".to_string()],
@@ -432,7 +432,7 @@ mod tests {
         
         let transfer = TransferRequest {
             from: account.blockchain_address.clone(),
-            to: "art456def".to_string(),
+            to: "heart456def".to_string(),
             amount: 1000,
             nonce: nonce.hex().to_string(),
             deadline: 9999999999,
@@ -479,7 +479,7 @@ mod tests {
         
         let transfer = TransferRequest {
             from: account.blockchain_address.clone(),
-            to: "art456def".to_string(),
+            to: "heart456def".to_string(),
             amount: 1000,
             nonce: nonce.hex().to_string(),
             deadline: 9999999999,
@@ -550,15 +550,15 @@ mod tests {
         let nonce = Nonce::generate().unwrap();
         
         let auth_request = AuthRequest {
-            requester: "art123".to_string(),
+            requester: "heart123".to_string(),
             nonce: nonce.hex().to_string(),
             timestamp: 1234567890,
             permissions: vec![],
         };
         
         let transfer_request = TransferRequest {
-            from: "art123".to_string(),
-            to: "art456".to_string(),
+            from: "heart123".to_string(),
+            to: "heart456".to_string(),
             amount: 0,
             nonce: nonce.hex().to_string(),
             deadline: 1234567890,

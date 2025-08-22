@@ -4,8 +4,8 @@ use bs58;
 use consistenttime::ct_u8_slice_eq;
 use crate::error::WalletError;
 
-const PREFIX: &str = "art";
-const VERSION_BYTE: u8 = 0x41; // Custom version byte for 'art' addresses
+const PREFIX: &str = "heart";
+const VERSION_BYTE: u8 = 0x41; // Custom version byte for 'heart' addresses
 
 pub struct Address {
     raw: Vec<u8>,
@@ -57,8 +57,8 @@ impl Address {
     
     pub fn validate(address: &str) -> Result<bool, WalletError> {
         // Always perform the same operations regardless of input
-        let mut prefix_bytes = [0u8; 3];
-        let mut input_prefix = [0u8; 3];
+        let mut prefix_bytes = [0u8; 8]; // Increased buffer to handle "heart"
+        let mut input_prefix = [0u8; 8];
         
         prefix_bytes[..PREFIX.len()].copy_from_slice(PREFIX.as_bytes());
         

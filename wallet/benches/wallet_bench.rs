@@ -33,7 +33,7 @@ fn bench_address_validation(c: &mut Criterion) {
     let seed = Seed::generate(12).unwrap();
     let account = UnifiedAccount::derive(&seed, 0, 0).unwrap();
     let valid_address = account.blockchain_address;
-    let invalid_address = "artinvalidaddress123";
+    let invalid_address = "heartinvalidaddress123";
     
     c.bench_function("address_validation_valid", |b| {
         b.iter(|| {

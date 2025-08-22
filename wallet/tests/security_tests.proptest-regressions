@@ -1,0 +1,7 @@
+# Seeds for failure cases proptest has generated in the past. It is
+# automatically read and these particular cases re-run before any
+# novel cases are generated.
+#
+# It is recommended to check this file in to source control so that
+# everyone who runs the test benefits from these saved cases.
+cc b47660abdf0aebdab0f271b3656aa53ee922933608c45b6221da72f89e4b5e02 # shrinks to valid_chars = "Aa0aAaaAaaA0a00A0aAa", prefix = "heart"

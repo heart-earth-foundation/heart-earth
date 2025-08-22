@@ -220,7 +220,7 @@ mod tests {
         let nonce = Nonce::generate().unwrap();
         let message = AuthMessage::new(
             "example.com".to_string(),
-            "art1234567890abcdef".to_string(),
+            "heart1234567890abcdef".to_string(),
             "https://example.com/login".to_string(),
             nonce,
             Some("I accept the Terms of Service".to_string()),
@@ -236,7 +236,7 @@ mod tests {
         let nonce = Nonce::generate().unwrap();
         let message = AuthMessage::new(
             "example.com".to_string(),
-            "art1234567890abcdef".to_string(),
+            "heart1234567890abcdef".to_string(),
             "https://example.com/login".to_string(),
             nonce,
             Some("I accept the Terms of Service".to_string()),
@@ -244,7 +244,7 @@ mod tests {
         
         let message_string = message.to_message_string();
         assert!(message_string.contains("example.com wants you to sign in"));
-        assert!(message_string.contains("art1234567890abcdef"));
+        assert!(message_string.contains("heart1234567890abcdef"));
         assert!(message_string.contains("I accept the Terms of Service"));
     }
 
