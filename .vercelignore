@@ -1,6 +1,6 @@
-# Ignore everything except website folder
+# Ignore everything except web folder
 /*
-!website/
+!web/
 
 # Rust build artifacts
 target/
@@ -12,7 +12,7 @@ Cargo.lock
 
 # Documentation that's not needed for deployment
 *.md
-!website/*.md
+!web/*.md
 
 # Rust source code
 wallet/
