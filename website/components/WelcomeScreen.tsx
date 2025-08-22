@@ -7,8 +7,9 @@ interface WelcomeScreenProps {
 
 export default function WelcomeScreen({ onScreenChange }: WelcomeScreenProps) {
   return (
-    <div className="min-h-screen flex items-center justify-center px-6">
-      <div className="text-center space-y-12 max-w-2xl mx-auto">
+    <div className="container mx-auto px-6 py-8">
+      <div className="min-h-[80vh] flex items-center justify-center">
+        <div className="text-center space-y-12 max-w-2xl mx-auto">
         <div className="space-y-6">
           <h1 className="text-6xl md:text-7xl font-bold">
             Heart Earth
@@ -43,6 +44,7 @@ export default function WelcomeScreen({ onScreenChange }: WelcomeScreenProps) {
         <div className="text-sm text-muted-foreground space-y-2 border-t pt-6">
           <p>Live Network: <span className="font-mono">157.245.208.60:4001</span></p>
           <p>Channel: <span className="font-mono">/art/dev/general/v1</span></p>
+        </div>
         </div>
       </div>
     </div>

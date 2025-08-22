@@ -76,8 +76,8 @@ export default function DashboardScreen({ walletData, onLogout }: DashboardScree
   }
 
   return (
-    <div className="min-h-screen px-6 py-8">
-      <div className="max-w-7xl mx-auto space-y-6">
+    <div className="container mx-auto px-6 py-8">
+      <div className="min-h-[80vh] space-y-6">
         <div className="flex justify-between items-center">
           <h1 className="text-3xl font-bold">Heart Earth Dashboard</h1>
           <Button variant="outline" onClick={onLogout}>

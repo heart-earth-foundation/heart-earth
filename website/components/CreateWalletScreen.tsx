@@ -75,46 +75,103 @@ export default function CreateWalletScreen({ onWalletCreated, onBack }: CreateWa
   }
 
   const renderPasswordStep = () => (
-    <div className="min-h-screen flex items-center justify-center px-6 py-8">
-      <Card className="w-full max-w-md">
-        <CardHeader>
-          <CardTitle>Create New Wallet</CardTitle>
-          <CardDescription>Set up your wallet with a secure password</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <form onSubmit={handlePasswordSubmit} className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="wallet-name">Wallet Name</Label>
-              <Input
-                id="wallet-name"
-                type="text"
-                value={walletName}
-                onChange={(e) => setWalletName(e.target.value)}
-                required
-              />
+    <div className="container mx-auto px-6 py-8">
+      <div className="min-h-[80vh] flex items-center justify-center">
+        <Card className="w-full max-w-md">
+          <CardHeader>
+            <CardTitle>Create New Wallet</CardTitle>
+            <CardDescription>Set up your wallet with a secure password</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <form onSubmit={handlePasswordSubmit} className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="wallet-name">Wallet Name</Label>
+                <Input
+                  id="wallet-name"
+                  type="text"
+                  value={walletName}
+                  onChange={(e) => setWalletName(e.target.value)}
+                  required
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="password">Password (ASCII only)</Label>
+                <Input
+                  id="password"
+                  type="password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  minLength={8}
+                  required
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="confirm-password">Confirm Password</Label>
+                <Input
+                  id="confirm-password"
+                  type="password"
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
+                  required
+                />
+              </div>
+
+              {error && (
+                <Alert variant="destructive">
+                  <AlertDescription>{error}</AlertDescription>
+                </Alert>
+              )}
+
+              <div className="flex gap-3">
+                <Button type="button" variant="outline" onClick={onBack} className="flex-1">
+                  Back
+                </Button>
+                <Button type="submit" className="flex-1">
+                  Generate Wallet
+                </Button>
+              </div>
+            </form>
+          </CardContent>
+        </Card>
+      </div>
+    </div>
+  )
+
+  const renderMnemonicStep = () => (
+    <div className="container mx-auto px-6 py-8">
+      <div className="min-h-[80vh] flex items-center justify-center">
+        <Card className="w-full max-w-2xl">
+          <CardHeader className="text-center">
+            <CardTitle className="text-destructive">⚠️ SAVE YOUR RECOVERY PHRASE</CardTitle>
+            <CardDescription>This phrase will ONLY be shown ONCE!</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-6">
+            <Alert variant="destructive">
+              <AlertDescription className="font-semibold">
+                Write down this phrase and keep it safe! You will need it to recover your wallet.
+              </AlertDescription>
+            </Alert>
+
+            <div className="bg-muted p-6 rounded-lg border">
+              <p className="font-mono text-lg text-center leading-relaxed">
+                {mnemonic}
+              </p>
             </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="password">Password (ASCII only)</Label>
-              <Input
-                id="password"
-                type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                minLength={8}
-                required
+            <div className="flex items-center justify-center space-x-2">
+              <Checkbox
+                id="saved"
+                checked={savedMnemonic}
+                onCheckedChange={(checked) => setSavedMnemonic(checked as boolean)}
               />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="confirm-password">Confirm Password</Label>
-              <Input
-                id="confirm-password"
-                type="password"
-                value={confirmPassword}
-                onChange={(e) => setConfirmPassword(e.target.value)}
-                required
-              />
+              <Label 
+                htmlFor="saved" 
+                className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+              >
+                I have saved my recovery phrase
+              </Label>
             </div>
 
             {error && (
@@ -124,73 +181,20 @@ export default function CreateWalletScreen({ onWalletCreated, onBack }: CreateWa
             )}
 
             <div className="flex gap-3">
-              <Button type="button" variant="outline" onClick={onBack} className="flex-1">
-                Back
+              <Button variant="outline" onClick={onBack} className="flex-1">
+                Go Back
               </Button>
-              <Button type="submit" className="flex-1">
-                Generate Wallet
+              <Button 
+                onClick={handleMnemonicConfirm}
+                disabled={!savedMnemonic}
+                className="flex-1"
+              >
+                Create Wallet
               </Button>
             </div>
-          </form>
-        </CardContent>
-      </Card>
-    </div>
-  )
-
-  const renderMnemonicStep = () => (
-    <div className="min-h-screen flex items-center justify-center px-6 py-8">
-      <Card className="w-full max-w-2xl">
-        <CardHeader className="text-center">
-          <CardTitle className="text-destructive">⚠️ SAVE YOUR RECOVERY PHRASE</CardTitle>
-          <CardDescription>This phrase will ONLY be shown ONCE!</CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-6">
-          <Alert variant="destructive">
-            <AlertDescription className="font-semibold">
-              Write down this phrase and keep it safe! You will need it to recover your wallet.
-            </AlertDescription>
-          </Alert>
-
-          <div className="bg-muted p-6 rounded-lg border">
-            <p className="font-mono text-lg text-center leading-relaxed">
-              {mnemonic}
-            </p>
-          </div>
-
-          <div className="flex items-center justify-center space-x-2">
-            <Checkbox
-              id="saved"
-              checked={savedMnemonic}
-              onCheckedChange={(checked) => setSavedMnemonic(checked as boolean)}
-            />
-            <Label 
-              htmlFor="saved" 
-              className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-            >
-              I have saved my recovery phrase
-            </Label>
-          </div>
-
-          {error && (
-            <Alert variant="destructive">
-              <AlertDescription>{error}</AlertDescription>
-            </Alert>
-          )}
-
-          <div className="flex gap-3">
-            <Button variant="outline" onClick={onBack} className="flex-1">
-              Go Back
-            </Button>
-            <Button 
-              onClick={handleMnemonicConfirm}
-              disabled={!savedMnemonic}
-              className="flex-1"
-            >
-              Create Wallet
-            </Button>
-          </div>
-        </CardContent>
-      </Card>
+          </CardContent>
+        </Card>
+      </div>
     </div>
   )
 
