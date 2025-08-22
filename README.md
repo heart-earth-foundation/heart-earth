@@ -32,10 +32,11 @@ A secure peer-to-peer blockchain network with HD wallet functionality built in R
 ## 🌐 Network Details
 
 **Live Bootstrap Node:**
-- **Address**: `157.245.208.60:4001`
+- **TCP Address**: `157.245.208.60:4001` (CLI clients)
+- **WebSocket Address**: `ws://157.245.208.60:4001/ws` (web browsers)
 - **Peer ID**: `12D3KooWP6VY4vsRWi73nHLCEoqDnJ674ZjP5mNUKXHELM84Jsfm`
 - **Channel**: `/art/dev/general/v1`
-- **Status**: 24/7 online
+- **Status**: 24/7 online with both TCP and WebSocket support
 
 ## 🔒 Security Features
 
@@ -119,7 +120,8 @@ See [DIGITALOCEAN_DEPLOYMENT.md](DIGITALOCEAN_DEPLOYMENT.md) for complete deploy
 2. SSH in and install dependencies
 3. Clone, build, and run the bootstrap node
 4. **Keep it running 24/7**: `nohup ./target/release/bootstrap > bootstrap.log 2>&1 &`
-5. Update your `.env` with the new bootstrap details
+5. **Supports both TCP and WebSocket**: CLI clients and web browsers can connect
+6. Update your `.env` with the new bootstrap details
 
 **Managing Your Bootstrap Node:**
 - **Check if running**: `ps aux | grep bootstrap`
@@ -138,7 +140,8 @@ BOOTSTRAP_ADDRESS=/ip4/157.245.208.60/tcp/4001
 ## 🐛 Troubleshooting
 
 **Connection Issues:**
-- Ensure firewall allows outbound connections on port 4001
+- **CLI clients**: Ensure firewall allows outbound connections on port 4001 (TCP)
+- **Web browsers**: Connect to `ws://157.245.208.60:4001/ws` (WebSocket)
 - Check bootstrap node is online: `ping 157.245.208.60`
 - Verify environment variables in `.env` file
 
@@ -168,16 +171,17 @@ This project is licensed under the MIT License - see the LICENSE file for detail
 
 - [x] HD Wallet with dual key derivation
 - [x] P2P networking with libp2p
-- [x] Bootstrap node deployment
+- [x] Bootstrap node deployment with TCP + WebSocket support
 - [x] Client application with messaging
+- [x] Web browser compatibility (WebSocket transport)
 - [ ] Blockchain transaction processing
-- [ ] Web interface
+- [ ] Web interface (frontend in development)
 - [ ] Mobile applications
 - [ ] Advanced routing and NAT traversal
 
 ## 🔗 Links
 
-- **Live Network**: Connect to `157.245.208.60:4001`
+- **Live Network**: TCP `157.245.208.60:4001` | WebSocket `ws://157.245.208.60:4001/ws`
 - **Documentation**: See `/docs` directory
 - **Issues**: Report bugs via GitHub Issues
 - **Deployment**: See `DIGITALOCEAN_DEPLOYMENT.md`

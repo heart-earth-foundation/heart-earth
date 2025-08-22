@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Heart Earth WASM Test</title>
+</head>
+<body>
+    <h1>Heart Earth WASM Test</h1>
+    <div id="output"></div>
+    
+    <script type="module">
+        import init, { greet, generate_mnemonic, create_account, create_p2p_connection } from './pkg/wasm.js';
+        
+        async function run() {
+            await init();
+            
+            const output = document.getElementById('output');
+            
+            try {
+                // Test basic function
+                const greeting = greet('WASM');
+                output.innerHTML += `<p>Greeting: ${greeting}</p>`;
+                
+                // Test mnemonic generation
+                const mnemonic = generate_mnemonic();
+                output.innerHTML += `<p>Generated mnemonic: ${mnemonic}</p>`;
+                
+                // Test account creation
+                const account = create_account(mnemonic, 0, 0);
+                const accountData = JSON.parse(account);
+                output.innerHTML += `<p>Blockchain address: ${accountData.blockchain_address}</p>`;
+                output.innerHTML += `<p>Peer ID: ${accountData.peer_id}</p>`;
+                
+                // Test P2P connection creation
+                const p2p = create_p2p_connection(mnemonic, 0, 0);
+                const p2pData = JSON.parse(p2p);
+                output.innerHTML += `<p>P2P Peer ID: ${p2pData.peer_id}</p>`;
+                output.innerHTML += `<p>P2P Status: ${p2pData.status}</p>`;
+                
+                // Verify they match
+                if (accountData.peer_id === p2pData.peer_id) {
+                    output.innerHTML += `<p style="color: green;">✅ Peer IDs match!</p>`;
+                } else {
+                    output.innerHTML += `<p style="color: red;">❌ Peer IDs don't match</p>`;
+                }
+                
+            } catch (error) {
+                output.innerHTML += `<p style="color: red;">Error: ${error}</p>`;
+            }
+        }
+        
+        run();
+    </script>
+</body>
+</html>

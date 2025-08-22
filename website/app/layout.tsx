@@ -1,9 +1,12 @@
 import type { Metadata } from 'next'
 import './globals.css'
+import { ThemeProvider } from '@/components/theme-provider'
+import { Navigation } from '@/components/navigation'
+import { Footer } from '@/components/footer'
 
 export const metadata: Metadata = {
-  title: 'Heart Earth - P2P Blockchain Network',
-  description: 'Secure peer-to-peer blockchain network with HD wallet functionality',
+  title: 'Heart Earth - A Decentralized Internet',
+  description: 'A Decentralized Internet - Create a new wallet or login to participate in the network',
 }
 
 export default function RootLayout({
@@ -12,9 +15,22 @@ export default function RootLayout({
   children: React.ReactNode
 }) {
   return (
-    <html lang="en">
-      <body className="min-h-screen bg-gray-900 text-white">
-        {children}
+    <html lang="en" suppressHydrationWarning>
+      <body>
+        <ThemeProvider
+          attribute="class"
+          defaultTheme="dark"
+          enableSystem
+          disableTransitionOnChange
+        >
+          <div className="min-h-screen bg-background text-foreground flex flex-col">
+            <Navigation />
+            <main className="flex-1">
+              {children}
+            </main>
+            <Footer />
+          </div>
+        </ThemeProvider>
       </body>
     </html>
   )

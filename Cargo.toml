@@ -2,7 +2,8 @@
 members = [
     "wallet",
     "blockchain", 
-    "p2p"
+    "p2p",
+    "wasm"
 ]
 resolver = "2"
 
@@ -53,3 +54,6 @@ criterion = { version = "0.5", features = ["html_reports"] }
 test-case = "3.3"
 subtle = "2.5"
 consistenttime = "0.1"
+
+# WASM support
+getrandom = { version = "0.2.16", features = ["js"] }

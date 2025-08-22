@@ -3,6 +3,11 @@
 import { useState } from 'react'
 import { WalletData } from '@/app/page'
 import { SecureWallet } from '@/lib/wallet'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card'
+import { Alert, AlertDescription } from '@/components/ui/alert'
 
 interface LoginScreenProps {
   onLogin: (data: WalletData) => void
@@ -55,64 +60,68 @@ export default function LoginScreen({ onLogin, onBack }: LoginScreenProps) {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center">
-      <div className="card max-w-md mx-auto">
-      <h2 className="text-2xl font-bold text-center mb-6 text-heart-earth-500">
-        Login
-      </h2>
+    <div className="min-h-screen flex items-center justify-center px-6 py-8">
+      <Card className="w-full max-w-md">
+        <CardHeader>
+          <CardTitle>Login</CardTitle>
+          <CardDescription>Access your existing wallet</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <form onSubmit={handleLogin} className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="wallet-name">Wallet Name</Label>
+              <Input
+                id="wallet-name"
+                type="text"
+                value={walletName}
+                onChange={(e) => setWalletName(e.target.value)}
+                required
+              />
+            </div>
 
-      <form onSubmit={handleLogin} className="space-y-4">
-        <div>
-          <label className="block text-sm font-medium mb-1">Wallet Name</label>
-          <input
-            type="text"
-            value={walletName}
-            onChange={(e) => setWalletName(e.target.value)}
-            className="w-full input-field"
-            required
-          />
-        </div>
+            <div className="space-y-2">
+              <Label htmlFor="password">Password</Label>
+              <Input
+                id="password"
+                type="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required
+              />
+            </div>
 
-        <div>
-          <label className="block text-sm font-medium mb-1">Password</label>
-          <input
-            type="password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            className="w-full input-field"
-            required
-          />
-        </div>
+            {error && (
+              <Alert variant="destructive">
+                <AlertDescription>{error}</AlertDescription>
+              </Alert>
+            )}
 
-        {error && (
-          <div className="text-red-500 text-sm text-center">
-            {error}
-          </div>
-        )}
-
-        <div className="flex space-x-3">
-          <button 
-            type="button" 
-            onClick={onBack} 
-            className="flex-1 btn-secondary"
-            disabled={loading}
-          >
-            Back
-          </button>
-          <button 
-            type="submit" 
-            className="flex-1 btn-primary"
-            disabled={loading}
-          >
-            {loading ? 'Loading...' : 'Login'}
-          </button>
-        </div>
-      </form>
-
-      <div className="mt-6 text-center text-sm text-gray-400">
-        <p>Wallet stored in: <span className="font-mono">~/.config/heart-earth/wallets/</span></p>
-      </div>
-      </div>
+            <div className="flex gap-3">
+              <Button 
+                type="button" 
+                variant="outline"
+                onClick={onBack} 
+                className="flex-1"
+                disabled={loading}
+              >
+                Back
+              </Button>
+              <Button 
+                type="submit" 
+                className="flex-1"
+                disabled={loading}
+              >
+                {loading ? 'Loading...' : 'Login'}
+              </Button>
+            </div>
+          </form>
+        </CardContent>
+        <CardFooter className="justify-center">
+          <p className="text-sm text-muted-foreground text-center">
+            Wallet stored in: <span className="font-mono">~/.config/heart-earth/wallets/</span>
+          </p>
+        </CardFooter>
+      </Card>
     </div>
   )
 }

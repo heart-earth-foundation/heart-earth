@@ -1,0 +1,29 @@
+# Ignore everything except website folder
+/*
+!website/
+
+# Rust build artifacts
+target/
+Cargo.lock
+
+# Development files
+*.log
+.env
+
+# Documentation that's not needed for deployment
+*.md
+!website/*.md
+
+# Rust source code
+wallet/
+blockchain/
+p2p/
+Cargo.toml
+
+# Railway deployment files
+railway.toml
+Dockerfile
+
+# Testing files
+tests/
+benches/
