@@ -1,7 +1,7 @@
 mod common;
 
 use rstest::*;
-use wallet::{Wallet, Seed, UnifiedAccount, WalletError};
+use wallet::{Wallet, Seed, UnifiedAccount};
 use common::*;
 
 #[rstest]
@@ -131,8 +131,8 @@ fn test_invalid_mnemonic_handling() {
 
 #[test]
 fn test_wallet_deterministic_behavior() {
-    let wallet1 = Wallet::from_mnemonic(TEST_MNEMONIC_12, None).unwrap();
-    let wallet2 = Wallet::from_mnemonic(TEST_MNEMONIC_12, None).unwrap();
+    let _wallet1 = Wallet::from_mnemonic(TEST_MNEMONIC_12, None).unwrap();
+    let _wallet2 = Wallet::from_mnemonic(TEST_MNEMONIC_12, None).unwrap();
     
     let seed1 = create_test_seed().unwrap();
     let seed2 = create_test_seed().unwrap();

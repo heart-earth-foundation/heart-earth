@@ -11,15 +11,19 @@ use tokio::time::timeout;
 use p2p::{P2PNode, build_transport, HeartEarthBehaviour, P2PError};
 use wallet::{Seed, UnifiedAccount};
 
+#[allow(dead_code)]
 const DEV_CHANNEL: &str = "/art/dev/general/v1";
+#[allow(dead_code)]
 const DEFAULT_TIMEOUT: Duration = Duration::from_secs(10);
 
+#[allow(dead_code)]
 pub struct TestNetwork {
     pub bootstrap: Swarm<HeartEarthBehaviour>,
     pub peers: Vec<Swarm<HeartEarthBehaviour>>,
     pub bootstrap_addr: Option<Multiaddr>,
 }
 
+#[allow(dead_code)]
 impl TestNetwork {
     pub async fn new(num_peers: usize) -> Result<Self, P2PError> {
         let bootstrap = create_test_swarm().await?;
@@ -134,6 +138,7 @@ impl TestNetwork {
     }
 }
 
+#[allow(dead_code)]
 pub async fn create_test_swarm() -> Result<Swarm<HeartEarthBehaviour>, P2PError> {
     let seed = Seed::generate(12)?;
     let account = UnifiedAccount::derive(&seed, 0, 0)?;
@@ -156,6 +161,7 @@ pub async fn create_test_swarm() -> Result<Swarm<HeartEarthBehaviour>, P2PError>
     Ok(swarm)
 }
 
+#[allow(dead_code)]
 pub async fn wait_for_listen_addr(
     swarm: &mut Swarm<HeartEarthBehaviour>, 
     timeout_duration: Duration
@@ -175,6 +181,7 @@ pub async fn wait_for_listen_addr(
     }
 }
 
+#[allow(dead_code)]
 pub async fn wait_for_connection(
     swarm: &mut Swarm<HeartEarthBehaviour>, 
     timeout_duration: Duration
@@ -198,6 +205,7 @@ pub fn verify_message_authenticity(message: &Message, expected_peer: &PeerId) ->
     message.source.as_ref() == Some(expected_peer)
 }
 
+#[allow(dead_code)]
 pub async fn wait_for_connection_between_swarms(
     swarm1: &mut Swarm<HeartEarthBehaviour>,
     swarm2: &mut Swarm<HeartEarthBehaviour>,

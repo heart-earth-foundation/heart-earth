@@ -1,6 +1,7 @@
 use libp2p_identity::{PeerId, Keypair, secp256k1, ed25519};
 use crate::{error::WalletError, derivation::Ed25519DerivedKey};
 
+#[derive(Clone)]
 pub struct P2PIdentity {
     keypair: Keypair,
     peer_id: PeerId,

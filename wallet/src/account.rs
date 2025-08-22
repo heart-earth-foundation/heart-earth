@@ -7,7 +7,7 @@ use crate::{
     identity::P2PIdentity,
 };
 
-#[derive(Serialize, Deserialize)]
+#[derive(Clone, Serialize, Deserialize)]
 pub struct UnifiedAccount {
     pub index: u32,
     pub account_number: u32,

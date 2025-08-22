@@ -47,6 +47,7 @@ impl KeyDerivation {
     }
 }
 
+#[derive(Clone)]
 pub struct DerivedKey {
     pub private_key: XPrv,
     pub public_key: XPub,
@@ -62,6 +63,7 @@ impl DerivedKey {
     }
 }
 
+#[derive(Clone)]
 pub struct Ed25519DerivedKey {
     pub signing_key: SigningKey,
     pub private_key_bytes: [u8; 32],

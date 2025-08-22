@@ -10,6 +10,7 @@ pub fn create_test_seed() -> Result<Seed, WalletError> {
     Seed::from_phrase(TEST_MNEMONIC_12)
 }
 
+#[allow(dead_code)]
 pub fn create_test_seed_with_passphrase(passphrase: &str) -> Result<Seed, WalletError> {
     let seed = Seed::from_phrase(TEST_MNEMONIC_12)?;
     Ok(seed.with_passphrase(passphrase.to_string()))

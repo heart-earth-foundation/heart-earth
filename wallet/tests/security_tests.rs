@@ -3,10 +3,9 @@ mod common;
 use std::collections::HashSet;
 use std::time::Instant;
 use proptest::prelude::*;
-use quickcheck::{Arbitrary, Gen, QuickCheck};
 use test_case::test_case;
 use consistenttime::ct_u8_slice_eq;
-use wallet::{Seed, UnifiedAccount, WalletError, Address};
+use wallet::{Seed, UnifiedAccount, Address};
 use common::*;
 
 #[test]
