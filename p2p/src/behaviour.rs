@@ -6,8 +6,6 @@ use libp2p::{
     swarm::NetworkBehaviour,
     PeerId,
 };
-use std::hash::{Hash, Hasher};
-use std::collections::hash_map::DefaultHasher;
 use crate::error::P2PError;
 
 #[derive(NetworkBehaviour)]
@@ -21,9 +19,9 @@ pub struct HeartEarthBehaviour {
 impl HeartEarthBehaviour {
     pub fn new(local_peer_id: PeerId, keypair: &libp2p_identity::Keypair) -> Result<Self, P2PError> {
         let message_id_fn = |message: &gossipsub::Message| {
-            let mut s = DefaultHasher::new();
-            message.data.hash(&mut s);
-            MessageId::from(s.finish().to_string())
+            use sha2::{Sha256, Digest};
+            let hash = Sha256::digest(&message.data);
+            MessageId::from(hex::encode(hash))
         };
 
         let gossipsub_config = gossipsub::ConfigBuilder::default()
