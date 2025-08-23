@@ -5,24 +5,22 @@ use libp2p::{
     Multiaddr,
     futures::StreamExt,
 };
-use p2p::{P2PNode, build_transport, HeartEarthBehaviour};
+use libp2p_identity::{Keypair, PeerId};
+use p2p::{build_transport, HeartEarthBehaviour};
 use std::error::Error;
-use wallet::{Seed, UnifiedAccount};
 
 const DEV_CHANNEL: &str = "/art/dev/general/v1";
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn Error>> {
-    let seed = Seed::generate(12)?;
-    let account = UnifiedAccount::derive(&seed, 0, 0)?;
-    let ed25519_key = account.ed25519_derived_key()
-        .ok_or("No ed25519 key available")?;
+    let keypair_bytes = std::fs::read("bootstrap_keypair.key")?;
+    let keypair = Keypair::from_protobuf_encoding(&keypair_bytes)?;
+    let peer_id = PeerId::from(&keypair.public());
     
-    let node = P2PNode::from_wallet_key(ed25519_key)?;
-    let transport = build_transport(node.keypair())?;
-    let behaviour = HeartEarthBehaviour::new(*node.peer_id(), node.keypair())?;
+    let transport = build_transport(&keypair)?;
+    let behaviour = HeartEarthBehaviour::new(peer_id, &keypair)?;
     
-    let mut swarm = SwarmBuilder::with_existing_identity(node.keypair().clone())
+    let mut swarm = SwarmBuilder::with_existing_identity(keypair)
         .with_tokio()
         .with_other_transport(|_| transport)?
         .with_behaviour(|_| behaviour)?
