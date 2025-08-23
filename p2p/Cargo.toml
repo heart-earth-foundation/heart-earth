@@ -14,6 +14,8 @@ wallet = { path = "../wallet" }
 sha2 = { workspace = true }
 hex = { workspace = true }
 libp2p-connection-limits = "0.6.0"
+tokio-tungstenite = "0.27"
+futures = "0.3"
 
 # CLI
 clap = { workspace = true }

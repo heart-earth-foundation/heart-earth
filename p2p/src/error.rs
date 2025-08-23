@@ -11,6 +11,9 @@ pub enum P2PError {
     #[error("Network behaviour error: {0}")]
     Behaviour(String),
     
+    #[error("Message error: {0}")]
+    Message(String),
+    
     #[error("Wallet error: {0}")]
     Wallet(#[from] wallet::WalletError),
     

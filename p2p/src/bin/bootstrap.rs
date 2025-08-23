@@ -6,7 +6,7 @@ use libp2p::{
     futures::StreamExt,
 };
 use libp2p_identity::{Keypair, PeerId};
-use p2p::{build_transport, HeartEarthBehaviour};
+use p2p::{build_transport, HeartEarthBehaviour, BrowserWebSocketServer};
 use std::error::Error;
 
 const DEV_CHANNEL: &str = "/art/dev/general/v1";
@@ -81,8 +81,32 @@ async fn main() -> Result<(), Box<dyn Error>> {
         }
     });
 
+    // Start browser WebSocket server on port 4002
+    let (browser_server, mut gossipsub_rx, browser_tx) = BrowserWebSocketServer::new();
+    let browser_bind_addr = "0.0.0.0:4002";
+    
+    tokio::spawn(async move {
+        if let Err(e) = browser_server.start(browser_bind_addr).await {
+            println!("Browser WebSocket server error: {}", e);
+        }
+    });
+    
+    println!("Browser WebSocket server starting on {}", browser_bind_addr);
+
     loop {
         tokio::select! {
+            // Handle browser messages to gossipsub
+            browser_message = gossipsub_rx.recv() => {
+                if let Some((topic_str, data)) = browser_message {
+                    if topic_str == DEV_CHANNEL {
+                        if let Err(e) = swarm.behaviour_mut().gossipsub.publish(topic.clone(), data.as_bytes()) {
+                            println!("Failed to publish browser message to gossipsub: {}", e);
+                        } else {
+                            println!("Published browser message to gossipsub: {}", data);
+                        }
+                    }
+                }
+            },
             event = swarm.select_next_some() => match event {
                 SwarmEvent::NewListenAddr { address, .. } => {
                     println!("Listening on {address}");
@@ -124,6 +148,9 @@ async fn main() -> Result<(), Box<dyn Error>> {
                                         let content = String::from_utf8_lossy(&message.data);
                                         println!("Message from {}: {}", source, content);
                                         println!("Message ID: {}", message_id);
+                                        
+                                        // Forward gossipsub message to browser clients
+                                        let _ = browser_tx.send((DEV_CHANNEL.to_string(), content.to_string(), source.to_string()));
                                     }
                                 },
                                 libp2p::gossipsub::Event::Subscribed { peer_id, topic } => {
