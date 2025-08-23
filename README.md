@@ -31,12 +31,10 @@ A secure peer-to-peer blockchain network with HD wallet functionality built in R
 
 ## 🌐 Network Details
 
-**Live Bootstrap Node:**
-- **TCP Address**: `157.245.208.60:4001` (CLI clients)
-- **WebSocket Address**: `ws://157.245.208.60:4001/ws` (web browsers)
-- **Peer ID**: `12D3KooWP6VY4vsRWi73nHLCEoqDnJ674ZjP5mNUKXHELM84Jsfm`
+**Bootstrap Node:**
 - **Channel**: `/art/dev/general/v1`
-- **Status**: 24/7 online with both TCP and WebSocket support
+- **Protocol**: TCP and WebSocket support
+- Configure your bootstrap node address in `.env` file
 
 ## 🔒 Security Features
 
@@ -66,7 +64,7 @@ Peer ID: 12D3KooWJD7NfLu726X6xMsGo7JFTj5s7iWb4tvobCTNsGXtQYNB
 Blockchain address: artTL1jb55QE2YCXvKdiknQfwjd85Pa9gqRdU
 Connected to developer channel: /art/dev/general/v1
 Type messages to send, 'quit' to exit:
-Connected to 12D3KooWP6VY4vsRWi73nHLCEoqDnJ674ZjP5mNUKXHELM84Jsfm
+Connected to bootstrap node
 hello world
 ```
 
@@ -133,16 +131,17 @@ See [DIGITALOCEAN_DEPLOYMENT.md](DIGITALOCEAN_DEPLOYMENT.md) for complete deploy
 
 Environment variables (automatically loaded from `.env`):
 ```bash
-BOOTSTRAP_PEER_ID=12D3KooWP6VY4vsRWi73nHLCEoqDnJ674ZjP5mNUKXHELM84Jsfm
-BOOTSTRAP_ADDRESS=/ip4/157.245.208.60/tcp/4001
+# Copy .env.example to .env and configure with your bootstrap node details
+BOOTSTRAP_PEER_ID=your_bootstrap_peer_id
+BOOTSTRAP_ADDRESS=/ip4/your.server.ip/tcp/4001
 ```
 
 ## 🐛 Troubleshooting
 
 **Connection Issues:**
 - **CLI clients**: Ensure firewall allows outbound connections on port 4001 (TCP)
-- **Web browsers**: Connect to `ws://157.245.208.60:4001/ws` (WebSocket)
-- Check bootstrap node is online: `ping 157.245.208.60`
+- **Web browsers**: Use WebSocket connection to your bootstrap node
+- Check bootstrap node is online
 - Verify environment variables in `.env` file
 
 **Wallet Issues:**
@@ -181,7 +180,7 @@ This project is licensed under the MIT License - see the LICENSE file for detail
 
 ## 🔗 Links
 
-- **Live Network**: TCP `157.245.208.60:4001` | WebSocket `ws://157.245.208.60:4001/ws`
+- **Network Protocol**: TCP and WebSocket support
 - **Documentation**: See `/docs` directory
 - **Issues**: Report bugs via GitHub Issues
 - **Deployment**: See `DIGITALOCEAN_DEPLOYMENT.md`
