@@ -71,7 +71,7 @@ impl WasmWallet {
         
         // Base58 encode with prefix
         let base58_encoded = bs58::encode(&raw).into_string();
-        let encoded = format!("art{}", base58_encoded);
+        let encoded = format!("heart{}", base58_encoded);
         
         Ok(encoded)
     }

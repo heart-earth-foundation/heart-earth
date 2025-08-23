@@ -17,6 +17,10 @@ Thumbs.db
 # Bootstrap keypair (private key - never commit)
 bootstrap_keypair.key
 
+# Deployment documentation (sensitive information)
+BOOTSTRAP_DEPLOYMENT.md
+SSL_SETUP_ACTUAL.md
+
 # Railway
 .railway/
 
@@ -41,4 +45,5 @@ IMPLEMENTATION_CHECKLIST.md
 TESTING_VERIFICATION.md
 WALLET_SYSTEM_OVERVIEW.md
 BOOTSTRAP_SECURITY.md
+SESSION_SUMMARY.md
 web/
