@@ -103,6 +103,38 @@ async fn main() -> Result<(), Box<dyn Error>> {
                                 }
                             }
                         }
+                        p2p::HeartEarthBehaviourEvent::Gossipsub(gossip_event) => {
+                            match gossip_event {
+                                libp2p::gossipsub::Event::Message { 
+                                    message, 
+                                    message_id,
+                                    .. 
+                                } => {
+                                    if let Some(source) = message.source {
+                                        if message.data.len() > 4096 {
+                                            println!("Message too large from {}", source);
+                                            continue;
+                                        }
+                                        
+                                        if message.topic != topic.hash() {
+                                            println!("Invalid topic from {}", source);
+                                            continue;
+                                        }
+                                        
+                                        let content = String::from_utf8_lossy(&message.data);
+                                        println!("Message from {}: {}", source, content);
+                                        println!("Message ID: {}", message_id);
+                                    }
+                                },
+                                libp2p::gossipsub::Event::Subscribed { peer_id, topic } => {
+                                    println!("Peer {} subscribed to topic {}", peer_id, topic);
+                                },
+                                libp2p::gossipsub::Event::Unsubscribed { peer_id, topic } => {
+                                    println!("Peer {} unsubscribed from topic {}", peer_id, topic);
+                                },
+                                _ => {}
+                            }
+                        }
                         _ => {
                             println!("Other behaviour event: {event:?}");
                         }
