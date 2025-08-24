@@ -38,6 +38,7 @@ subtle = { workspace = true }
 consistenttime = { workspace = true }
 slip10_ed25519 = { workspace = true }
 ed25519-dalek = { workspace = true }
+x25519-dalek = { workspace = true }
 
 [dev-dependencies]
 proptest = { workspace = true }

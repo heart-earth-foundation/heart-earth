@@ -23,6 +23,8 @@ hex = { workspace = true }
 ripemd = "0.1"
 slip10_ed25519 = { workspace = true }
 libp2p-identity = { workspace = true }
+x25519-dalek = { workspace = true }
+aes-gcm = { workspace = true }
 
 # Random number generation for browser
 getrandom = { workspace = true }

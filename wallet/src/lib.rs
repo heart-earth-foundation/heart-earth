@@ -9,6 +9,7 @@ pub mod nonce;
 pub mod message_signing;
 pub mod structured_signing;
 pub mod biometric;
+pub mod encryption;
 
 pub use error::WalletError;
 pub use seed::Seed;
@@ -19,3 +20,4 @@ pub use nonce::Nonce;
 pub use message_signing::{AuthMessage, AuthSignature, P2PAuthSigner, AccountAuthSigner, SignatureType};
 pub use structured_signing::{DomainSeparator, TypedData, AuthRequest, TransferRequest, P2PStructuredSigner, AccountStructuredSigner, StructuredSignature, StructuredSignatureType};
 pub use biometric::{BiometricManager, BiometricCredential, BiometricChallenge};
+pub use encryption::EncryptionManager;

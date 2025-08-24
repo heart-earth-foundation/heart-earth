@@ -19,7 +19,14 @@ pub struct BrowserMessage {
     #[serde(rename = "type")]
     pub message_type: String,
     pub topic: String,
-    pub data: String,
+    #[serde(default)]
+    pub data: Option<String>,
+    #[serde(default)]
+    pub encrypted: Option<bool>,
+    #[serde(default)]
+    pub ciphertext: Option<String>,
+    #[serde(default)]
+    pub nonce: Option<String>,
     pub signature: AuthSignature,
     pub sender: String,
 }
@@ -175,25 +182,67 @@ impl BrowserWebSocketServer {
         let browser_message: BrowserMessage = serde_json::from_str(text)
             .map_err(|e| P2PError::Message(format!("Invalid JSON: {}", e)))?;
 
-        if browser_message.message_type != "publish" {
-            return Err(P2PError::Message("Unsupported message type".to_string()));
+        match browser_message.message_type.as_str() {
+            "publish" => {
+                // Handle regular publish message
+            }
+            "key_announcement" => {
+                // Handle key announcement - just relay to other clients
+                let clients_guard = clients.read().await;
+                let key_message = serde_json::json!({
+                    "type": "key_announcement",
+                    "sender": browser_message.sender,
+                    "public_key": browser_message.data.clone().unwrap_or_default(),
+                    "timestamp": std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH).unwrap().as_secs()
+                });
+                
+                for client in clients_guard.values() {
+                    let _ = client.sender.send(key_message.to_string());
+                }
+                
+                return Ok(browser_message.sender);
+            }
+            _ => {
+                return Err(P2PError::Message("Unsupported message type".to_string()));
+            }
         }
 
         Self::verify_message_signature(&browser_message).await?;
         Self::check_nonce_replay(&browser_message, used_nonces).await?;
         Self::check_rate_limit(&browser_message.sender, clients).await?;
 
-        gossipsub_sender.send((browser_message.topic.clone(), browser_message.data.clone()))
+        // Determine message content for gossipsub
+        let message_content = if browser_message.encrypted.unwrap_or(false) {
+            // For encrypted messages, send the ciphertext
+            browser_message.ciphertext.clone().unwrap_or_default()
+        } else {
+            // For plain messages, send the data
+            browser_message.data.clone().unwrap_or_default()
+        };
+
+        gossipsub_sender.send((browser_message.topic.clone(), message_content))
             .map_err(|e| P2PError::Message(format!("Failed to send to gossipsub: {}", e)))?;
 
         let clients_guard = clients.read().await;
-        let message = serde_json::json!({
-            "type": "message",
-            "topic": browser_message.topic,
-            "data": browser_message.data,
-            "sender": browser_message.sender,
-            "timestamp": std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH).unwrap().as_secs()
-        });
+        let message = if browser_message.encrypted.unwrap_or(false) {
+            serde_json::json!({
+                "type": "message",
+                "topic": browser_message.topic,
+                "encrypted": true,
+                "ciphertext": browser_message.ciphertext,
+                "nonce": browser_message.nonce,
+                "sender": browser_message.sender,
+                "timestamp": std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH).unwrap().as_secs()
+            })
+        } else {
+            serde_json::json!({
+                "type": "message",
+                "topic": browser_message.topic,
+                "data": browser_message.data,
+                "sender": browser_message.sender,
+                "timestamp": std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH).unwrap().as_secs()
+            })
+        };
         
         for client in clients_guard.values() {
             let _ = client.sender.send(message.to_string());

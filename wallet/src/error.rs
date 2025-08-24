@@ -25,4 +25,7 @@ pub enum WalletError {
     
     #[error("Storage error: {0}")]
     Storage(String),
+    
+    #[error("Encryption error: {0}")]
+    Encryption(String),
 }

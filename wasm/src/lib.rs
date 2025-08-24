@@ -159,6 +159,153 @@ pub fn create_simple_nonce() -> Result<String, JsError> {
     Ok(hex::encode(nonce_bytes))
 }
 
+// Encryption functions for E2E messaging
+#[wasm_bindgen]
+pub fn derive_x25519_key_from_account(
+    mnemonic: &str,
+    account_number: u32,
+    index: u32
+) -> Result<String, JsError> {
+    use x25519_dalek::{StaticSecret, PublicKey as X25519PublicKey};
+    use bip39::Mnemonic;
+    use std::str::FromStr;
+    
+    let mnemonic = Mnemonic::from_str(mnemonic)
+        .map_err(|e| JsError::new(&e.to_string()))?;
+    let seed = mnemonic.to_seed("");
+    
+    let indexes = vec![44, 1, account_number, 0, index];
+    let ed25519_private_bytes = slip10_ed25519::derive_ed25519_private_key(&seed, &indexes);
+    
+    let x25519_secret = StaticSecret::from(ed25519_private_bytes);
+    let x25519_public = X25519PublicKey::from(&x25519_secret);
+    
+    let result = serde_json::json!({
+        "public_key": hex::encode(x25519_public.as_bytes()),
+        "secret_key_available": true
+    });
+    
+    Ok(result.to_string())
+}
+
+#[wasm_bindgen]
+pub fn compute_shared_secret(
+    mnemonic: &str,
+    account_number: u32,
+    index: u32,
+    their_public_key_hex: &str
+) -> Result<String, JsError> {
+    use x25519_dalek::{StaticSecret, PublicKey as X25519PublicKey};
+    use bip39::Mnemonic;
+    use std::str::FromStr;
+    
+    let mnemonic = Mnemonic::from_str(mnemonic)
+        .map_err(|e| JsError::new(&e.to_string()))?;
+    let seed = mnemonic.to_seed("");
+    
+    let indexes = vec![44, 1, account_number, 0, index];
+    let ed25519_private_bytes = slip10_ed25519::derive_ed25519_private_key(&seed, &indexes);
+    
+    let our_secret = StaticSecret::from(ed25519_private_bytes);
+    
+    let their_public_bytes = hex::decode(their_public_key_hex)
+        .map_err(|e| JsError::new(&format!("Invalid public key hex: {}", e)))?;
+    
+    if their_public_bytes.len() != 32 {
+        return Err(JsError::new("Public key must be 32 bytes"));
+    }
+    
+    let mut their_public_array = [0u8; 32];
+    their_public_array.copy_from_slice(&their_public_bytes);
+    let their_public = X25519PublicKey::from(their_public_array);
+    
+    let shared_secret = our_secret.diffie_hellman(&their_public);
+    
+    Ok(hex::encode(shared_secret.as_bytes()))
+}
+
+#[wasm_bindgen]
+pub fn encrypt_message_for_channel(
+    message: &str,
+    shared_secret_hex: &str,
+    channel_id: &str
+) -> Result<String, JsError> {
+    use aes_gcm::{
+        aead::{Aead, AeadCore, KeyInit, OsRng},
+        Aes256Gcm, Key
+    };
+    use sha2::{Sha256, Digest};
+    
+    let shared_secret_bytes = hex::decode(shared_secret_hex)
+        .map_err(|e| JsError::new(&format!("Invalid shared secret hex: {}", e)))?;
+    
+    if shared_secret_bytes.len() != 32 {
+        return Err(JsError::new("Shared secret must be 32 bytes"));
+    }
+    
+    let mut hasher = Sha256::new();
+    hasher.update(&shared_secret_bytes);
+    hasher.update(channel_id.as_bytes());
+    let key_bytes = hasher.finalize();
+    
+    let key = Key::<Aes256Gcm>::from_slice(&key_bytes);
+    let cipher = Aes256Gcm::new(key);
+    let nonce = Aes256Gcm::generate_nonce(&mut OsRng);
+    
+    let ciphertext = cipher.encrypt(&nonce, message.as_bytes())
+        .map_err(|e| JsError::new(&format!("Encryption failed: {}", e)))?;
+    
+    let result = serde_json::json!({
+        "ciphertext": hex::encode(ciphertext),
+        "nonce": hex::encode(nonce)
+    });
+    
+    Ok(result.to_string())
+}
+
+#[wasm_bindgen]
+pub fn decrypt_message_for_channel(
+    ciphertext_hex: &str,
+    nonce_hex: &str,
+    shared_secret_hex: &str,
+    channel_id: &str
+) -> Result<String, JsError> {
+    use aes_gcm::{
+        aead::{Aead, KeyInit},
+        Aes256Gcm, Key, Nonce
+    };
+    use sha2::{Sha256, Digest};
+    
+    let ciphertext = hex::decode(ciphertext_hex)
+        .map_err(|e| JsError::new(&format!("Invalid ciphertext hex: {}", e)))?;
+    let nonce_bytes = hex::decode(nonce_hex)
+        .map_err(|e| JsError::new(&format!("Invalid nonce hex: {}", e)))?;
+    let shared_secret_bytes = hex::decode(shared_secret_hex)
+        .map_err(|e| JsError::new(&format!("Invalid shared secret hex: {}", e)))?;
+    
+    if shared_secret_bytes.len() != 32 {
+        return Err(JsError::new("Shared secret must be 32 bytes"));
+    }
+    if nonce_bytes.len() != 12 {
+        return Err(JsError::new("Nonce must be 12 bytes"));
+    }
+    
+    let mut hasher = Sha256::new();
+    hasher.update(&shared_secret_bytes);
+    hasher.update(channel_id.as_bytes());
+    let key_bytes = hasher.finalize();
+    
+    let key = Key::<Aes256Gcm>::from_slice(&key_bytes);
+    let cipher = Aes256Gcm::new(key);
+    
+    let nonce = Nonce::from_slice(&nonce_bytes);
+    let plaintext = cipher.decrypt(nonce, ciphertext.as_ref())
+        .map_err(|e| JsError::new(&format!("Decryption failed: {}", e)))?;
+    
+    String::from_utf8(plaintext)
+        .map_err(|e| JsError::new(&format!("Invalid UTF-8 in decrypted message: {}", e)))
+}
+
 // Development/testing functions that require wallet crate
 #[cfg(test)]
 mod wallet_compat_tests {
