@@ -8,7 +8,7 @@ A secure peer-to-peer blockchain network with HD wallet functionality built in R
 
 1. **Clone and Build**
    ```bash
-   git clone https://github.com/AudioLedger/heart-earth.git
+   git clone https://github.com/heart-earth-foundation/heart-earth.git
    cd heart-earth
    cargo build --release -p p2p --bin client
    ```
@@ -38,7 +38,7 @@ A secure peer-to-peer blockchain network with HD wallet functionality built in R
 
 ## 🔒 Security Features
 
-- **End-to-End Encryption**: All connections use Noise Protocol (same as Signal/WhatsApp)
+- **End-to-End Encryption**: Browser-to-browser message encryption with X25519 key exchange and AES-256-GCM
 - **Ed25519 Authentication**: Each peer has cryptographic identity
 - **Signed Messages**: All messages are signed and verified
 - **HD Wallet**: Hierarchical deterministic wallet with seed phrase recovery
@@ -111,7 +111,7 @@ heart-earth/
 
 ## 🚀 Deploy Your Own Bootstrap Node
 
-See [DIGITALOCEAN_DEPLOYMENT.md](DIGITALOCEAN_DEPLOYMENT.md) for complete deployment guide.
+Deploy on any Ubuntu server with Rust toolchain.
 
 **Quick Deploy on DigitalOcean:**
 1. Create Ubuntu droplet ($6/month)
@@ -173,8 +173,9 @@ This project is licensed under the MIT License - see the LICENSE file for detail
 - [x] Bootstrap node deployment with TCP + WebSocket support
 - [x] Client application with messaging
 - [x] Web browser compatibility (WebSocket transport)
+- [x] Web interface with WASM integration
+- [x] Browser-to-browser encrypted messaging
 - [ ] Blockchain transaction processing
-- [ ] Web interface (frontend in development)
 - [ ] Mobile applications
 - [ ] Advanced routing and NAT traversal
 
