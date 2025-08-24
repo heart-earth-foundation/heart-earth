@@ -183,8 +183,21 @@ impl BrowserWebSocketServer {
         Self::check_nonce_replay(&browser_message, used_nonces).await?;
         Self::check_rate_limit(&browser_message.sender, clients).await?;
 
-        gossipsub_sender.send((browser_message.topic, browser_message.data))
+        gossipsub_sender.send((browser_message.topic.clone(), browser_message.data.clone()))
             .map_err(|e| P2PError::Message(format!("Failed to send to gossipsub: {}", e)))?;
+
+        let clients_guard = clients.read().await;
+        let message = serde_json::json!({
+            "type": "message",
+            "topic": browser_message.topic,
+            "data": browser_message.data,
+            "sender": browser_message.sender,
+            "timestamp": std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH).unwrap().as_secs()
+        });
+        
+        for client in clients_guard.values() {
+            let _ = client.sender.send(message.to_string());
+        }
 
         Ok(browser_message.sender)
     }
