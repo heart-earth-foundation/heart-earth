@@ -103,23 +103,31 @@ pub fn sign_p2p_message(
         .map_err(|e| JsError::new(&format!("Failed to generate nonce: {}", e)))?;
     let nonce = hex::encode(nonce_bytes);
     
-    // Create AuthMessage structure (matches CLI wallet format)
+    // Create complete AuthMessage structure (matches CLI wallet format exactly)
     let auth_message = serde_json::json!({
         "domain": domain,
         "address": blockchain_address,
         "uri": origin,
+        "version": "1",
         "nonce": nonce,
-        "message": message_content
+        "issued_at": chrono::Utc::now().to_rfc3339(),
+        "statement": message_content,
+        "expiration_time": null,
+        "not_before": null
     });
     
-    // Create message to sign (matches CLI P2PAuthSigner format)
+    // Create message to sign (matches CLI AuthMessage.to_message_string() exactly)
+    let statement = message_content.unwrap_or_else(|| "Sign in to Heart Earth".to_string());
+    let issued_at = chrono::Utc::now().to_rfc3339();
+    
     let message_to_sign = format!(
-        "{}\nwants you to sign in with your Heart Earth account:\n{}\n\n{}\n\nURI: {}\nNonce: {}",
+        "{} wants you to sign in with your account:\n{}\n\n{}\n\nURI: {}\nVersion: 1\nNonce: {}\nIssued At: {}",
         domain,
         blockchain_address,
-        message_content.unwrap_or_else(|| "Sign in to Heart Earth".to_string()),
+        statement,
         origin,
-        nonce
+        nonce,
+        issued_at
     );
     
     // Hash and sign the message

@@ -41,6 +41,9 @@ web-sys = { version = "0.3", features = ["console"] }
 # P2P networking for WASM (minimal for now)  
 js-sys = "0.3"
 
+# Time handling for message timestamps
+chrono = { workspace = true }
+
 # Ed25519 P2P signing only (WASM compatible, no secp256k1 needed)
 
 [dev-dependencies]
