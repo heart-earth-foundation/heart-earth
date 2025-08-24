@@ -130,8 +130,9 @@ pub fn sign_p2p_message(
         issued_at
     );
     
-    // Hash and sign the message
+    // Hash and sign the message (with P2P auth context like CLI)
     let mut hasher = Sha256::new();
+    hasher.update(b"heart-earth-auth-p2p");  // P2P_AUTH_CONTEXT
     hasher.update(message_to_sign.as_bytes());
     let message_hash = hasher.finalize();
     
