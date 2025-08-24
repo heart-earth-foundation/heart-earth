@@ -70,6 +70,86 @@ pub fn create_p2p_connection(mnemonic: &str, account_number: u32, index: u32) ->
     Ok(result.to_string())
 }
 
+// P2P message signing for browser authentication (Ed25519 only)
+#[wasm_bindgen]
+pub fn sign_p2p_message(
+    mnemonic: &str,
+    account_number: u32,
+    index: u32,
+    domain: &str,
+    blockchain_address: &str,
+    origin: &str,
+    message_content: Option<String>
+) -> Result<String, JsError> {
+    use ed25519_dalek::{SigningKey, Signature, Signer};
+    use bip39::Mnemonic;
+    use sha2::{Sha256, Digest};
+    use std::str::FromStr;
+    use getrandom::getrandom;
+    
+    // Parse mnemonic and derive Ed25519 key (same as CLI)
+    let mnemonic = Mnemonic::from_str(mnemonic)
+        .map_err(|e| JsError::new(&e.to_string()))?;
+    let seed = mnemonic.to_seed("");
+    
+    // Derive Ed25519 key using SLIP-0010 (matches CLI exactly)
+    let indexes = vec![44, 1, account_number, 0, index];
+    let ed25519_private_bytes = slip10_ed25519::derive_ed25519_private_key(&seed, &indexes);
+    let signing_key = SigningKey::from_bytes(&ed25519_private_bytes);
+    
+    // Generate nonce (32 random bytes)
+    let mut nonce_bytes = [0u8; 32];
+    getrandom(&mut nonce_bytes)
+        .map_err(|e| JsError::new(&format!("Failed to generate nonce: {}", e)))?;
+    let nonce = hex::encode(nonce_bytes);
+    
+    // Create AuthMessage structure (matches CLI wallet format)
+    let auth_message = serde_json::json!({
+        "domain": domain,
+        "address": blockchain_address,
+        "uri": origin,
+        "nonce": nonce,
+        "message": message_content
+    });
+    
+    // Create message to sign (matches CLI P2PAuthSigner format)
+    let message_to_sign = format!(
+        "{}\nwants you to sign in with your Heart Earth account:\n{}\n\n{}\n\nURI: {}\nNonce: {}",
+        domain,
+        blockchain_address,
+        message_content.unwrap_or_else(|| "Sign in to Heart Earth".to_string()),
+        origin,
+        nonce
+    );
+    
+    // Hash and sign the message
+    let mut hasher = Sha256::new();
+    hasher.update(message_to_sign.as_bytes());
+    let message_hash = hasher.finalize();
+    
+    let signature: Signature = signing_key.sign(&message_hash);
+    
+    // Create AuthSignature response (matches CLI format)
+    let auth_signature = serde_json::json!({
+        "signature": hex::encode(signature.to_bytes()),
+        "message": auth_message,
+        "signature_type": "P2P"
+    });
+    
+    Ok(auth_signature.to_string())
+}
+
+#[wasm_bindgen]
+pub fn create_simple_nonce() -> Result<String, JsError> {
+    use getrandom::getrandom;
+    
+    let mut nonce_bytes = [0u8; 32];
+    getrandom(&mut nonce_bytes)
+        .map_err(|e| JsError::new(&format!("Failed to generate nonce: {}", e)))?;
+    
+    Ok(hex::encode(nonce_bytes))
+}
+
 // Development/testing functions that require wallet crate
 #[cfg(test)]
 mod wallet_compat_tests {
