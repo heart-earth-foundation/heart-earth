@@ -4,7 +4,7 @@ use aes_gcm::{
     aead::{Aead, AeadCore, KeyInit, OsRng},
     Aes256Gcm, Nonce, Key
 };
-use argon2::Argon2;
+use argon2::{Algorithm, Argon2, Params, Version};
 use argon2::password_hash::rand_core::RngCore;
 use serde::{Serialize, Deserialize};
 use zeroize::{Zeroize, Zeroizing};
@@ -140,8 +140,10 @@ impl WalletStorage {
     fn derive_key(password: &Zeroizing<String>, salt: &[u8; SALT_SIZE]) -> Result<Key<Aes256Gcm>, WalletError> {
         let mut key_bytes = Zeroizing::new([0u8; 32]);
         
-        Argon2::default()
-            .hash_password_into(password.as_bytes(), salt, &mut *key_bytes)
+        let params = Params::new(4096, 3, 1, Some(32))
+            .map_err(|e| WalletError::Storage(format!("Invalid Argon2 params: {}", e)))?;
+        let argon2 = Argon2::new(Algorithm::Argon2id, Version::V0x13, params);
+        argon2.hash_password_into(password.as_bytes(), salt, &mut *key_bytes)
             .map_err(|e| WalletError::Storage(format!("Key derivation failed: {}", e)))?;
         
         Ok(Key::<Aes256Gcm>::from_slice(&*key_bytes).clone())

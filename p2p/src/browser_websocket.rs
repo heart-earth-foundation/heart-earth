@@ -421,7 +421,10 @@ mod tests {
         let browser_message = BrowserMessage {
             message_type: "publish".to_string(),
             topic: "/art/dev/general/v1".to_string(),
-            data: "test data".to_string(),
+            data: Some("test data".to_string()),
+            encrypted: None,
+            ciphertext: None,
+            nonce: None,
             signature,
             sender: account.peer_id.clone(),
         };
@@ -451,7 +454,10 @@ mod tests {
         let browser_message = BrowserMessage {
             message_type: "publish".to_string(),
             topic: "/art/dev/general/v1".to_string(),
-            data: "test data".to_string(),
+            data: Some("test data".to_string()),
+            encrypted: None,
+            ciphertext: None,
+            nonce: None,
             signature,
             sender: account.peer_id.clone(),
         };

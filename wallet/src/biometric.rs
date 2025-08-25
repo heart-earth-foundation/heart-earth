@@ -75,8 +75,10 @@ impl BiometricManager {
         
         // Derive AES key from challenge
         let mut derived_key = [0u8; 32];
-        argon2::Argon2::default()
-            .hash_password_into(challenge_bytes, &salt, &mut derived_key)
+        let params = argon2::Params::new(4096, 3, 1, Some(32))
+            .map_err(|e| WalletError::Storage(format!("Invalid Argon2 params: {}", e)))?;
+        let argon2 = argon2::Argon2::new(argon2::Algorithm::Argon2id, argon2::Version::V0x13, params);
+        argon2.hash_password_into(challenge_bytes, &salt, &mut derived_key)
             .map_err(|e| WalletError::Storage(format!("Key derivation failed: {}", e)))?;
         
         // Encrypt wallet key
@@ -126,8 +128,10 @@ impl BiometricManager {
             return Err(WalletError::Storage("Invalid salt length".to_string()));
         }
         
-        argon2::Argon2::default()
-            .hash_password_into(challenge_bytes, &salt, &mut derived_key)
+        let params = argon2::Params::new(4096, 3, 1, Some(32))
+            .map_err(|e| WalletError::Storage(format!("Invalid Argon2 params: {}", e)))?;
+        let argon2 = argon2::Argon2::new(argon2::Algorithm::Argon2id, argon2::Version::V0x13, params);
+        argon2.hash_password_into(challenge_bytes, &salt, &mut derived_key)
             .map_err(|e| WalletError::Storage(format!("Key derivation failed: {}", e)))?;
         
         // Decrypt wallet key
